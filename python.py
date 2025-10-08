@@ -86,7 +86,7 @@ def process_financial_data(df):
 def get_ai_analysis(data_for_ai, api_key):
     """Gửi dữ liệu phân tích đến Gemini API và nhận nhận xét."""
     try:
-        # Khởi tạo client MỖI KHI GỌI (Logic gốc)
+        # Khởi tạo client MỖI KHI GỌC (Logic gốc)
         client = genai.Client(api_key=api_key) 
         model_name = 'gemini-2.5-flash' 
 
@@ -131,7 +131,22 @@ if uploaded_file is not None:
             
             # --- Chức năng 2 & 3: Hiển thị Kết quả ---
             st.subheader("2. Tốc độ Tăng trưởng & 3. Tỷ trọng Cơ cấu Tài sản")
-            st.dataframe(df_processed.style.format({
+            
+            # *** BẮT ĐẦU ĐIỀU CHỈNH THỨ TỰ CỘT ***
+            column_order = [
+                'Chỉ tiêu', 
+                'Năm trước', 
+                'Năm sau', 
+                'Tốc độ tăng trưởng (%)', 
+                'Tỷ trọng Năm trước (%)', 
+                'Tỷ trọng Năm sau (%)'
+            ]
+            
+            # Áp dụng thứ tự cột mới cho DataFrame
+            df_display = df_processed[column_order]
+            # *** KẾT THÚC ĐIỀU CHỈNH THỨ TỰ CỘT ***
+            
+            st.dataframe(df_display.style.format({ # Sử dụng df_display
                 'Năm trước': '{:,.0f}',
                 'Năm sau': '{:,.0f}',
                 'Tốc độ tăng trưởng (%)': '{:.2f}%',
@@ -188,7 +203,8 @@ if uploaded_file is not None:
                     'Thanh toán hiện hành (N)'
                 ],
                 'Giá trị': [
-                    df_processed.to_markdown(index=False),
+                    # Gửi toàn bộ dữ liệu đã xử lý cho AI, sử dụng df_processed (chứ không phải df_display)
+                    df_processed.to_markdown(index=False), 
                     # Đảm bảo giá trị này luôn là số (handle case where filter fails)
                     f"{df_processed[df_processed['Chỉ tiêu'].str.contains('TÀI SẢN NGẮN HẠN', case=False, na=False)]['Tốc độ tăng trưởng (%)'].iloc[0] if not df_processed[df_processed['Chỉ tiêu'].str.contains('TÀI SẢN NGẮN HẠN', case=False, na=False)].empty else 'N/A':.2f}%", 
                     f"{thanh_toan_hien_hanh_N_1}", 
